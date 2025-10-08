@@ -1,3 +1,4 @@
 streamlit
 matplotlib
 mysql-connector-python
+streamlit-aggrid
