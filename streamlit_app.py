@@ -7,14 +7,17 @@ from datetime import datetime
 from st_aggrid import JsCode, AgGrid, GridOptionsBuilder
 from st_aggrid.shared import GridUpdateMode
 
+db_credentials = st.secrets["database"]
+
 @st.cache_resource(ttl=3600)  # Cache for 1 hour
 def get_database_connection():
     try:
         connection = mysql.connector.connect(
-            host='52.12.110.149',
-            user='newvirus',
-            password='3d462a1b271d-4fc4-4c2748f0-9422-fb9f2f3d137d81bd',
-            database='admin_zaroprod',
+            host=db_credentials["host"],
+            port=db_credentials["port"],
+            user=db_credentials["user"],
+            password=db_credentials["password"],
+            database= db_credentials["database"],
             connection_timeout=30,
             autocommit=True,
             # Remove pool settings to use direct connection
