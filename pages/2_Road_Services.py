@@ -182,7 +182,10 @@ def calculate_operator_analysis(filtered_df, df_viajes_completo):
     # 5. Convertimos la columna de la estructura detallada a un string JSON
     final_analysis['detailed_orders'] = final_analysis['detailed_orders'].apply(json.dumps)
     
-    return final_analysis.sort_values('total_servicios', ascending=False)
+    return final_analysis.sort_values(
+    by=['truck', 'total_servicios'], 
+    ascending=[False, True]
+    )
 
 @st.cache_data(ttl=3600)
 def calculate_trailer_analysis(filtered_df, df_trailers):
