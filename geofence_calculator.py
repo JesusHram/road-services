@@ -64,9 +64,6 @@ def get_us_vehicles(api):
     Obtiene los vehículos de US usando la conexión existente.
     """
     try:
-        # --- CORRECCIÓN #1: Eliminar la creación de una nueva conexión ---
-        # Ya no se hace: api = get_geotab_connection()
-        # Ya no se hace: api.authenticate()
 
         logger.info("Paso 1: Obteniendo todos los dispositivos del grupo 'GroupVehicleId'...")
         all_vehicles = api.get('Device', search={
@@ -126,6 +123,7 @@ def debug_vehicle_groups():
             logger.info("-" * 40)
     except Exception as e:
         logger.error(f"❌ Error en debug: {e}")
+
 
 if __name__ == "__main__":
     debug_vehicle_groups()

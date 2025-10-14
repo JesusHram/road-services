@@ -223,38 +223,38 @@ class GeofenceAnalyzer:
         self.geofence_service = GeofenceService(geofence_file)
         self.entry_exit_counter = EntryExitCounter(self.geofence_service)
     
-def analyze_vehicle_data(self, vehicle_name, gps_points):
-    """
-    Analiza datos de un vehículo usando un método híbrido:
-    - Cuenta ciclos para geocercas de KM fijos.
-    - Calcula distancia real para geocercas específicas.
-    """
-    if not gps_points:
-        logger.warning(f"⚠️ No hay puntos GPS para {vehicle_name}")
-        return {}
-    
-    logger.info(f"🔍 Analizando {len(gps_points)} puntos GPS para {vehicle_name}")
-    
-    try:
-        # 1. Contar ciclos de entrada/salida (como antes)
-        cycles_count = self.entry_exit_counter.count_entry_exit_cycles(vehicle_name, gps_points)
+    def analyze_vehicle_data(self, vehicle_name, gps_points):
+        """
+        Analiza datos de un vehículo usando un método híbrido:
+        - Cuenta ciclos para geocercas de KM fijos.
+        - Calcula distancia real para geocercas específicas.
+        """
+        if not gps_points:
+            logger.warning(f"⚠️ No hay puntos GPS para {vehicle_name}")
+            return {}
         
-        # 2. Calcular distancias reales SOLO para las geocercas que lo necesiten
-        real_distances = {}
-        for geofence_id, km_value in self.geofence_service.km_values.items():
-            if km_value is None: # Si es None, significa que necesita cálculo real
-                distance = calculate_real_distance_in_geofence(gps_points, self.geofence_service, geofence_id)
-                real_distances[geofence_id] = distance
-                logger.info(f"🛣️ Distancia real calculada para '{geofence_id}': {distance:.2f} km")
+        logger.info(f"🔍 Analizando {len(gps_points)} puntos GPS para {vehicle_name}")
+        
+        try:
+            # 1. Contar ciclos de entrada/salida (como antes)
+            cycles_count = self.entry_exit_counter.count_entry_exit_cycles(vehicle_name, gps_points)
+            
+            # 2. Calcular distancias reales SOLO para las geocercas que lo necesiten
+            real_distances = {}
+            for geofence_id, km_value in self.geofence_service.km_values.items():
+                if km_value is None: # Si es None, significa que necesita cálculo real
+                    distance = calculate_real_distance_in_geofence(gps_points, self.geofence_service, geofence_id)
+                    real_distances[geofence_id] = distance
+                    logger.info(f"🛣️ Distancia real calculada para '{geofence_id}': {distance:.2f} km")
 
-        # 3. Calcular kilómetros totales usando el método híbrido
-        results = self.entry_exit_counter.calculate_kilometers(cycles_count, real_distances)
-        
-        total_km = sum(data['total_km'] for data in results.values())
-        logger.info(f"✅ Análisis completo para {vehicle_name}: {total_km:.2f} km totales.")
-        
-        return results
-        
-    except Exception as e:
-        logger.error(f"❌ Error analizando {vehicle_name}: {e}")
-        return {}
+            # 3. Calcular kilómetros totales usando el método híbrido
+            results = self.entry_exit_counter.calculate_kilometers(cycles_count, real_distances)
+            
+            total_km = sum(data['total_km'] for data in results.values())
+            logger.info(f"✅ Análisis completo para {vehicle_name}: {total_km:.2f} km totales.")
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"❌ Error analizando {vehicle_name}: {e}")
+            return {}

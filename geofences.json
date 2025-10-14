@@ -38,7 +38,7 @@
     {
       "type": "Feature",
       "properties": {
-        "id" : "Colombia",
+        "id" : "colombia",
         "name" : "Colombia"
       },
       "geometry": {
