@@ -166,5 +166,5 @@ cython_debug/
 # .gitignore
 .streamlit/secrets.toml
 
-credentials/driverscoring-275722-424b06080c95.json
+credentials/driverscoring-275722-cb46e6a338e7.json
 credentials/encoded.txt
