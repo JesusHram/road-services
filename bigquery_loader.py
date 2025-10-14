@@ -91,7 +91,11 @@ def main():
         
         logger.info(f"🚀 Iniciando carga para {fecha}")
         logger.info("=" * 50)
+        logger.info(f"🔐 BIGQUERY_SERVICE_ACCOUNT_KEY definida: {'BIGQUERY_SERVICE_ACCOUNT_KEY' in os.environ}")
         
+        #incializar servicio BigQuery
+        bq_service = BigQueryService()
+
         # Crear tabla si no existe
         bq_service.create_table_if_not_exists()
         
