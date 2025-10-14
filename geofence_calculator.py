@@ -9,16 +9,27 @@ logger = logging.getLogger(__name__)
 # ID del grupo US en Geotab
 US_GROUP_ID = "b27A3"
 
-db_credentials = st.secrets["geotab"]
-
 def get_geotab_connection():
-    """Obtener conexión a Geotab desde variables de entorno"""
-    return GeotabAPI(
-        username=db_credentials["GEOTAB_USERNAME"],
-        password=db_credentials["GEOTAB_PASSWORD"],
-        database=db_credentials["GEOTAB_DATABASE"],
-        server="my.geotab.com"
-    )
+    """Obtener conexión a Geotab - funciona en Streamlit y GitHub Actions"""
+    
+    # Para GitHub Actions - usa variables de entorno
+    if os.getenv('GEOTAB_USERNAME'):
+        return GeotabAPI(
+            username=os.getenv('GEOTAB_USERNAME'),
+            password=os.getenv('GEOTAB_PASSWORD'),
+            database=os.getenv('GEOTAB_DATABASE'),
+            server="my.geotab.com"
+        )
+    # Para Streamlit - usa secrets (tu código actual)
+    else:
+        import streamlit as st
+        db_credentials = st.secrets["geotab"]
+        return GeotabAPI(
+            username=db_credentials["GEOTAB_USERNAME"],
+            password=db_credentials["GEOTAB_PASSWORD"],
+            database=db_credentials["GEOTAB_DATABASE"],
+            server="my.geotab.com"
+        )
 
 def get_geotab_gps_data(vehicle_name, start_date, end_date):
     """Obtener datos GPS para un vehículo específico"""
