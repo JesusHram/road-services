@@ -25,14 +25,14 @@ jobs:
     - name: Crear credenciales BigQuery
       run: |
         mkdir -p credentials
-        echo "${{ secrets.BIGQUERY_SERVICE_ACCOUNT_KEY_B64 }}" | base64 --decode > credentials/driverscoring-275722-424b06080c95.json
+        echo "${{ secrets.BIGQUERY_SERVICE_ACCOUNT_KEY}}" | base64 --decode > credentials/driverscoring-275722-424b06080c95.json
         
     - name: Ejecutar carga
       env:
         GEOTAB_USERNAME: ${{ secrets.GEOTAB_USERNAME }}
         GEOTAB_PASSWORD: ${{ secrets.GEOTAB_PASSWORD }}
         GEOTAB_DATABASE: ${{ secrets.GEOTAB_DATABASE }}
-        BIGQUERY_SERVICE_ACCOUNT_KEY: ${{ secrets.BIGQUERY_SERVICE_ACCOUNT_KEY }} 
+        BIGQUERY_SERVICE_ACCOUNT_KEY: ${{ secrets.BIGQUERY_SERVICE_ACCOUNT_KEY}} 
       run: |
         echo "🔧 Verificando variables..."
         echo "BIGQUERY key length: ${#BIGQUERY_SERVICE_ACCOUNT_KEY}"
