@@ -56,35 +56,43 @@ def get_geotab_gps_data(vehicle_name, start_date, end_date):
 
 def get_us_vehicles():
     """
-    Obtiene vehículos que pertenecen SIMULTÁNEAMENTE al grupo general
-    y al grupo específico de US de forma eficiente.
+    Obtiene los vehículos de US, primero filtrando por tipo de asset (vehículo)
+    y luego por el grupo específico de US.
     """
     try:
         api = get_geotab_connection()
         api.authenticate()
-        
-        # Le pedimos a la API que filtre por vehículos que estén en AMBOS grupos.
-        us_vehicles_raw = api.get('Device', search={
-            'groups': [
-                {'id': 'GroupVehicleId'}, # Ajusta este ID si es diferente
-                {'id': US_GROUP_ID}
-            ]
+
+        # --- PASO 1: Obtener SOLO los assets que son vehículos ---
+        # Hacemos una llamada para traer todos los dispositivos que pertenecen al grupo de vehículos.
+        # Esto excluye las 'cajas' y reduce drásticamente el tamaño de la respuesta.
+        logger.info("Paso 1: Obteniendo todos los dispositivos del grupo 'GroupVehicleId'...")
+        all_vehicles = api.get('Device', search={
+            'groups': [{'id': 'GroupVehicleId'}] # Asegúrate de que este ID sea correcto
         })
-        
-        # El resultado ya contiene solo los vehículos que cumplen ambas condiciones.
-        us_vehicles = []
-        for vehicle in us_vehicles_raw:
-            us_vehicles.append({
-                'id': vehicle.get('id'),
-                'name': vehicle.get('name'),
-                'licensePlate': vehicle.get('licensePlate', '')
-            })
+        logger.info(f"   -> Se encontraron {len(all_vehicles)} vehículos en total.")
+
+        # --- PASO 2: Filtrar esa lista para encontrar los de US ---
+        # Ahora, de esa lista de solo vehículos, buscamos los que también están en el grupo de US.
+        logger.info("Paso 2: Filtrando la lista de vehículos para encontrar los del grupo US...")
+        us_vehicles_filtered = []
+        for vehicle in all_vehicles:
+            vehicle_groups = vehicle.get('groups', [])
+            # Verificamos si AL MENOS UNO de sus grupos es el de US
+            is_us_vehicle = any(group.get('id') == US_GROUP_ID for group in vehicle_groups)
             
-        logger.info(f"✅ Encontrados {len(us_vehicles)} vehículos que cumplen ambos criterios (filtrado en API)")
-        return us_vehicles
+            if is_us_vehicle:
+                us_vehicles_filtered.append({
+                    'id': vehicle.get('id'),
+                    'name': vehicle.get('name'),
+                    'licensePlate': vehicle.get('licensePlate', '')
+                })
+        
+        logger.info(f"✅ Encontrados {len(us_vehicles_filtered)} vehículos de US después del filtrado.")
+        return us_vehicles_filtered
         
     except Exception as e:
-        logger.error(f"❌ Error obteniendo vehículos US con filtro combinado: {e}")
+        logger.error(f"❌ Error obteniendo vehículos US con el método de dos pasos: {e}")
         return []
 
 def analyze_weekly_geofence_data(vehicle_name, start_date, end_date):
