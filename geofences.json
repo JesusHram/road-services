@@ -4,7 +4,7 @@
     {
       "type": "Feature",
       "properties": {
-        "name" : "Aduana 420"
+        "name" : "aduana_420"
       },
       "geometry": {
         "coordinates": [
@@ -70,7 +70,7 @@
     {
       "type": "Feature",
       "properties": {
-        "name" : "Nuevo Laredo"
+        "name" : "nuevo_laredo"
       },
       "geometry": {
         "coordinates": [
