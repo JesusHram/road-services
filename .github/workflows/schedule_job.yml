@@ -13,6 +13,12 @@ jobs:
     - name: Checkout código
       uses: actions/checkout@v3
       
+    # <<< PASO AÑADIDO PARA AUTENTICARSE CON GOOGLE CLOUD >>>
+    - name: Authenticate to Google Cloud
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.BIGQUERY_SERVICE_ACCOUNT_KEY }}'
+
     - name: Configurar Python
       uses: actions/setup-python@v4
       with:
@@ -22,22 +28,13 @@ jobs:
       run: |
         pip install -r requirements.txt
         
-    - name: Crear credenciales BigQuery
-      run: |
-        mkdir -p credentials
-        echo "${{ secrets.BIGQUERY_SERVICE_ACCOUNT_KEY}}" | base64 --decode > credentials/driverscoring-275722-424b06080c95.json
         
     - name: Ejecutar carga
       env:
         GEOTAB_USERNAME: ${{ secrets.GEOTAB_USERNAME }}
         GEOTAB_PASSWORD: ${{ secrets.GEOTAB_PASSWORD }}
         GEOTAB_DATABASE: ${{ secrets.GEOTAB_DATABASE }}
-        BIGQUERY_SERVICE_ACCOUNT_KEY: ${{ secrets.BIGQUERY_SERVICE_ACCOUNT_KEY}} 
+      # Ya no necesitas pasar BIGQUERY_SERVICE_ACCOUNT_KEY como variable de entorno
       run: |
-        echo "🔧 Verificando variables..."
-        echo "BIGQUERY key length: ${#BIGQUERY_SERVICE_ACCOUNT_KEY}"
         python bigquery_loader.py
         
-    - name: Limpiar credenciales
-      run: |
-        rm -rf credentials/
