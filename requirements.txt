@@ -76,6 +76,7 @@ reflex-hosting-cli==0.1.54
 requests==2.32.4
 rich==14.0.0
 rpds-py==0.27.1
+shapely==2.1.2
 simple-websocket==1.1.0
 six==1.17.0
 smmap==5.0.2
