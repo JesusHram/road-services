@@ -1,0 +1,48 @@
+name: Daily BigQuery Load - US Vehicles
+
+on:
+  schedule:
+    # Ejecutar todos los días a las 2 AM UTC (8 PM CDMX del día anterior)
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Permite ejecución manual
+
+jobs:
+  load-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+      
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Instalar dependencias
+      run: |
+        pip install -r requirements.txt
+        
+    - name: Configurar credenciales BigQuery
+      run: |
+        echo '${{ secrets.BIGQUERY_SERVICE_ACCOUNT_KEY }}' > service-account-key.json
+        
+    - name: Ejecutar carga de datos
+      env:
+        GEOTAB_USERNAME: ${{ secrets.GEOTAB_USERNAME }}
+        GEOTAB_PASSWORD: ${{ secrets.GEOTAB_PASSWORD }}
+        GEOTAB_DATABASE: ${{ secrets.GEOTAB_DATABASE }}
+      run: |
+        python scripts/bigquery_loader.py
+        
+    - name: (Opcional) Debug de grupos de vehículos
+      env:
+        GEOTAB_USERNAME: ${{ secrets.GEOTAB_USERNAME }}
+        GEOTAB_PASSWORD: ${{ secrets.GEOTAB_PASSWORD }}
+        GEOTAB_DATABASE: ${{ secrets.GEOTAB_DATABASE }}
+      run: |
+        python -c "from scripts.geofence_calculator import debug_vehicle_groups; debug_vehicle_groups()"
+        
+    - name: Limpiar credenciales
+      run: |
+        rm -f service-account-key.json
