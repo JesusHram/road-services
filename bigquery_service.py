@@ -29,7 +29,7 @@ class BigQueryService:
             self.logger.error(f"❌ Fallo al inicializar el cliente BigQuery: {e}")
             raise
 
-        self.table_id = "driverscoring-275722.zaro_transportation.driver_status_geotab"
+        self.table_id = "driverscoring-275722.zaro_transportation.camiones_metrics"
         self.nuevo_laredo_tz = pytz.timezone('America/Monterrey')
 
     def get_current_time_nuevo_laredo(self):
