@@ -28,57 +28,56 @@ def get_geotab_connection():
             server="my.geotab.com"
         )
 
-def get_geotab_gps_data(vehicle_name, start_date, end_date):
-    """Obtener datos GPS para un vehículo específico"""
+def get_geotab_gps_data(api, vehicle_name, vehicle_id, start_date, end_date):
+    """Obtener datos GPS para un vehículo específico usando una conexión existente."""
     try:
-        api = get_geotab_connection()
-        api.authenticate()
-        vehicles = api.get("Device", search={"name": vehicle_name})
-        if not vehicles:
-            logger.warning(f"⚠️ Vehículo {vehicle_name} no encontrado")
-            return []
-        
-        vehicle_id = vehicles[0]["id"]
         logger.info(f"📍 Obteniendo datos GPS para {vehicle_name} ({start_date} a {end_date})")
-        log_records = api.get('LogRecord', {
+        
+        # FIX #1: Usar keyword arguments para la llamada a la API
+        params = {
             'deviceSearch': {'id': vehicle_id},
             'fromDate': f"{start_date} 00:00:00",
             'toDate': f"{end_date} 23:59:59"
-        })
+        }
+        log_records = api.get('LogRecord', **params)
         
-        gps_points = [{'lat': float(log['latitude']), 'lon': float(log['longitude']), 'timestamp': log.get('dateTime', '')} for log in log_records if log.get('latitude') and log.get('longitude')]
+        gps_points = []
+        for log in log_records:
+            if log.get('latitude') and log.get('longitude'):
+                gps_points.append({
+                    'lat': float(log['latitude']),
+                    'lon': float(log['longitude']),
+                    'timestamp': log.get('dateTime', '')
+                })
+        
         logger.info(f"   📍 {len(gps_points)} puntos GPS obtenidos")
         return gps_points
         
     except Exception as e:
+        # Aquí capturamos y registramos el OverLimitException si ocurre
         logger.error(f"❌ Error obteniendo datos GPS para {vehicle_name}: {e}")
+        # Si es un OverLimitException, podríamos querer esperar y reintentar, pero por ahora solo lo registramos.
         return []
 
-def get_us_vehicles():
+def get_us_vehicles(api):
     """
-    Obtiene los vehículos de US, primero filtrando por tipo de asset (vehículo)
-    y luego por el grupo específico de US.
+    Obtiene los vehículos de US usando la conexión existente.
     """
     try:
-        api = get_geotab_connection()
-        api.authenticate()
+        # --- CORRECCIÓN #1: Eliminar la creación de una nueva conexión ---
+        # Ya no se hace: api = get_geotab_connection()
+        # Ya no se hace: api.authenticate()
 
-        # --- PASO 1: Obtener SOLO los assets que son vehículos ---
-        # Hacemos una llamada para traer todos los dispositivos que pertenecen al grupo de vehículos.
-        # Esto excluye las 'cajas' y reduce drásticamente el tamaño de la respuesta.
         logger.info("Paso 1: Obteniendo todos los dispositivos del grupo 'GroupVehicleId'...")
         all_vehicles = api.get('Device', search={
-            'groups': [{'id': 'GroupVehicleId'}] # Asegúrate de que este ID sea correcto
+            'groups': [{'id': 'GroupVehicleId'}] 
         })
         logger.info(f"   -> Se encontraron {len(all_vehicles)} vehículos en total.")
 
-        # --- PASO 2: Filtrar esa lista para encontrar los de US ---
-        # Ahora, de esa lista de solo vehículos, buscamos los que también están en el grupo de US.
         logger.info("Paso 2: Filtrando la lista de vehículos para encontrar los del grupo US...")
         us_vehicles_filtered = []
         for vehicle in all_vehicles:
             vehicle_groups = vehicle.get('groups', [])
-            # Verificamos si AL MENOS UNO de sus grupos es el de US
             is_us_vehicle = any(group.get('id') == US_GROUP_ID for group in vehicle_groups)
             
             if is_us_vehicle:
@@ -95,13 +94,18 @@ def get_us_vehicles():
         logger.error(f"❌ Error obteniendo vehículos US con el método de dos pasos: {e}")
         return []
 
-def analyze_weekly_geofence_data(vehicle_name, start_date, end_date):
+def analyze_weekly_geofence_data(api, vehicle_name, vehicle_id, start_date, end_date):
     """Función principal para análisis de geocercas"""
-    gps_points = get_geotab_gps_data(vehicle_name, start_date, end_date)
+    
+    # --- CORRECCIÓN #2: Pasar todos los argumentos necesarios ---
+    gps_points = get_geotab_gps_data(api, vehicle_name, vehicle_id, start_date, end_date)
+    
     if not gps_points:
         return {}
+    
     analyzer = GeofenceAnalyzer("geofences.json")
     results = analyzer.analyze_vehicle_data(vehicle_name, gps_points)
+    
     return results
 
 def debug_vehicle_groups():
