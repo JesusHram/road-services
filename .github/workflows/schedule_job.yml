@@ -26,19 +26,6 @@ jobs:
       run: |
         mkdir -p credentials
         echo '${{ secrets.BIGQUERY_SERVICE_ACCOUNT_KEY }}' > credentials/driverscoring-275722-424b06080c95.json
-    - run: |
-        echo "🧪 Probando con JSON real..."
-        python -c "
-        import json, os
-        try:
-            data = json.loads(os.environ['BIGQUERY_SERVICE_ACCOUNT_KEY'])
-            print('✅ JSON real funciona!')
-            print(f'Project: {data[\"project_id\"]}')
-        except Exception as e:
-            print(f'❌ Error: {e}')
-            print('Primeros 300 caracteres:')
-            content = os.environ['BIGQUERY_SERVICE_ACCOUNT_KEY']
-            print(repr(content[:300]))
         
     - name: Ejecutar carga
       env:
