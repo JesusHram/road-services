@@ -12,8 +12,8 @@ blinker==1.9.0
 cachetools==6.2.0
 certifi==2025.7.14
 charset-normalizer==3.4.2
-click==8.1.8
-contourpy==1.3.0
+click==8.2.1
+contourpy==1.3.3
 cycler==0.12.1
 deprecation==2.1.0
 dotenv==0.9.9
@@ -34,17 +34,17 @@ idna==3.10
 Jinja2==3.1.6
 jsonschema==4.25.1
 jsonschema-specifications==2025.9.1
-kiwisolver==1.4.7
+kiwisolver==1.4.9
 Mako==1.3.10
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
-matplotlib==3.9.4
+matplotlib==3.10.7
 mdurl==0.1.2
 multidict==6.6.4
 mygeotab==0.9.3
 mysql-connector-python==9.4.0
 narwhals==2.7.0
-numpy==2.0.2
+numpy==2.3.1
 openpyxl==3.1.5
 packaging==25.0
 pandas==2.3.1
@@ -102,4 +102,3 @@ watchfiles==1.1.0
 wrapt==1.17.2
 wsproto==1.2.0
 yarl==1.20.1
-google-cloud-bigquery==3.12.0
