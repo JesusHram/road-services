@@ -8,6 +8,8 @@ on:
 jobs:
   load-data:
     runs-on: ubuntu-latest
+
+    environment: analisis 
     
     steps:
     - name: Checkout código
