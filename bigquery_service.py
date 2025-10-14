@@ -1,52 +1,36 @@
 import os
-import json
 import logging
-import base64
-from google.cloud import bigquery
-from google.oauth2 import service_account
 import pytz
 from datetime import datetime
+from google.cloud import bigquery
+from google.api_core import exceptions
 
 class BigQueryService:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        credentials = None
 
-        # 1. Intentar desde variable de entorno (GitHub Actions)
-        credentials_b64 = os.getenv('BIGQUERY_SERVICE_ACCOUNT_KEY')
-        if credentials_b64:
-            try:
-                # Decodificar Base64 a JSON
-                credentials_json = base64.b64decode(credentials_b64).decode('utf-8')
-                credentials_info = json.loads(credentials_json)
-                credentials = service_account.Credentials.from_service_account_info(credentials_info)
-                self.logger.info("✅ Credenciales BigQuery cargadas desde variable Base64 (entorno)")
-            except Exception as e:
-                self.logger.error(f"❌ Error cargando credenciales desde variable Base64: {e}")
+        try:
+            # La librería buscará automáticamente las credenciales.
+            # No necesitas pasarle nada.
+            self.client = bigquery.Client()
+            
+            # Es una buena práctica hacer una llamada simple para verificar la conexión
+            # y la autenticación al inicio.
+            self.client.list_datasets(max_results=1) 
+            self.logger.info("✅ Cliente BigQuery inicializado y autenticado correctamente.")
 
-        # 2. Intentar desde archivo local (para entorno de desarrollo)
-        if not credentials:
-            try:
-                credentials_path = os.path.join(os.getcwd(), 'credentials', 'driverscoring-275722-424b06080c95.json')
-                if os.path.exists(credentials_path):
-                    credentials = service_account.Credentials.from_service_account_file(credentials_path)
-                    self.logger.info(f"✅ Credenciales BigQuery cargadas desde archivo: {credentials_path}")
-                else:
-                    self.logger.warning(f"⚠️ Archivo de credenciales no encontrado en: {credentials_path}")
-            except Exception as e:
-                self.logger.error(f"❌ Error cargando credenciales desde archivo: {e}")
+        except exceptions.DefaultCredentialsError:
+            self.logger.error("❌ ERROR DE AUTENTICACIÓN: No se encontraron las credenciales.")
+            self.logger.error("Asegúrate de haberte autenticado. En local, usa 'gcloud auth application-default login'.")
+            self.logger.error("En GitHub Actions, asegúrate de que el paso 'google-github-actions/auth' se ejecutó correctamente.")
+            raise # Detiene la ejecución si no hay credenciales
 
-        # 3. Fallback: usar credenciales por defecto
-        if not credentials:
-            self.logger.warning("⚠️ Usando credenciales por defecto de BigQuery")
-            credentials = None
+        except Exception as e:
+            self.logger.error(f"❌ Fallo al inicializar el cliente BigQuery: {e}")
+            raise
 
-        # Crear cliente
-        self.client = bigquery.Client(credentials=credentials)
         self.table_id = "driverscoring-275722.zaro_transportation.driver_status_geotab"
         self.nuevo_laredo_tz = pytz.timezone('America/Monterrey')
-
-        self.logger.info("✅ Cliente BigQuery inicializado correctamente")
 
     def get_current_time_nuevo_laredo(self):
         """Obtener hora actual en zona horaria de Nuevo Laredo"""
