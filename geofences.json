@@ -4,6 +4,7 @@
     {
       "type": "Feature",
       "properties": {
+        "id" : "aduana_420",
         "name" : "aduana_420"
       },
       "geometry": {
@@ -37,6 +38,7 @@
     {
       "type": "Feature",
       "properties": {
+        "id" : "Colombia",
         "name" : "Colombia"
       },
       "geometry": {
@@ -70,6 +72,7 @@
     {
       "type": "Feature",
       "properties": {
+        "id" : "nuevo_laredo",
         "name" : "nuevo_laredo"
       },
       "geometry": {
