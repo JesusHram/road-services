@@ -102,3 +102,4 @@ watchfiles==1.1.0
 wrapt==1.17.2
 wsproto==1.2.0
 yarl==1.20.1
+google-cloud-bigquery==3.12.0

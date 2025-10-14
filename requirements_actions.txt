@@ -1,0 +1,7 @@
+# Solo para el ETL de GitHub Actions
+google-cloud-bigquery==3.12.0
+pandas==2.0.3
+shapely==2.0.1
+mygeotab==1.0.0
+python-dotenv==1.0.0
+pytz==2024.1
