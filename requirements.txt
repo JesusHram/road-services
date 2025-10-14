@@ -44,7 +44,7 @@ multidict==6.6.4
 mygeotab==0.9.3
 mysql-connector-python==9.4.0
 narwhals==2.7.0
-numpy==2.3.1
+numpy==2.0.2
 openpyxl==3.1.5
 packaging==25.0
 pandas==2.3.1
