@@ -33,7 +33,7 @@ jobs:
         GEOTAB_PASSWORD: ${{ secrets.GEOTAB_PASSWORD }}
         GEOTAB_DATABASE: ${{ secrets.GEOTAB_DATABASE }}
       run: |
-        python scripts/bigquery_loader.py
+        python bigquery_loader.py
         
     - name: Limpiar credenciales
       run: |
