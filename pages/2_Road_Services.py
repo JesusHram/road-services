@@ -154,7 +154,7 @@ def calculate_operator_analysis(filtered_df, df_viajes_completo):
     if 'operador' not in filtered_df.columns:
         filtered_df['operador'] = filtered_df.apply(find_closest_operator, args=(df_viajes_completo,), axis=1)
 
-    # --- NUEVA LÓGICA DE AGRUPACIÓN ANIDADA ---
+  
 
     # 1. Primero, agrupamos los productos por cada orden de servicio
     products_by_order = filtered_df.groupby(['operador', 'truck', 'work_order'])['product'].apply(
@@ -253,7 +253,7 @@ def display_operator_analysis_grid(operator_analysis):
                     // Devolvemos el bloque HTML completo para esta orden
                     return `
                         <div class="work-order-item">
-                            <strong>Servicio (work_order): ${order.work_order}</strong>
+                            <strong>Servicio (work_order): ${order.work_order} , Fecha: ${order.created_at} </strong>
                             <ul>
                                 ${productList}
                             </ul>
