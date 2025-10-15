@@ -90,8 +90,8 @@ def load_data():
 
 def filter_data_by_date(df, start_date, end_date):
     """Filtra el DataFrame principal por el rango de fechas."""
-    df['created_at'] = pd.to_datetime(df['created_at'])
-    mask = (df['created_at'].dt.date >= start_date) & (df['created_at'].dt.date <= end_date)
+    df['invoice_date'] = pd.to_datetime(df['invoice_date'])
+    mask = (df['invoice_date'].dt.date >= start_date) & (df['invoice_date'].dt.date <= end_date)
     return df.loc[mask].copy()
 
 @st.cache_data(ttl=3600)
@@ -99,7 +99,7 @@ def calculate_truck_consistency(filtered_df, start_date):
     """Calcula la consistencia de servicios de los camiones."""
     
     def get_unique_services(df):
-        daily_services = df.groupby(['created_at', 'truck', 'work_order']).size().reset_index()
+        daily_services = df.groupby(['invoice_date', 'truck', 'work_order']).size().reset_index()
         return daily_services.groupby('truck')['work_order'].nunique()
 
     reference_date = pd.to_datetime(start_date)
@@ -110,9 +110,9 @@ def calculate_truck_consistency(filtered_df, start_date):
     rest_months_end = three_month_end + pd.DateOffset(months=9)
 
     # Crear máscaras
-    one_month_mask = (filtered_df['created_at'] >= reference_date) & (filtered_df['created_at'] < one_month_end)
-    three_months_mask = (filtered_df['created_at'] >= one_month_end) & (filtered_df['created_at'] < three_month_end)
-    rest_months_mask = (filtered_df['created_at'] >= three_month_end) & (filtered_df['created_at'] <= rest_months_end)
+    one_month_mask = (filtered_df['invoice_date'] >= reference_date) & (filtered_df['invoice_date'] < one_month_end)
+    three_months_mask = (filtered_df['invoice_date'] >= one_month_end) & (filtered_df['invoice_date'] < three_month_end)
+    rest_months_mask = (filtered_df['invoice_date'] >= three_month_end) & (filtered_df['invoice_date'] <= rest_months_end)
 
     # Crear DataFrame comparativo
     comparison_df = pd.DataFrame({
@@ -139,7 +139,7 @@ def calculate_operator_analysis(filtered_df, df_viajes_completo):
     """Realiza el análisis de servicios por operador."""
     
     def find_closest_operator(row, df_viajes):
-        road_service_date = row['created_at']
+        road_service_date = row['invoice_date']
         truck = row['truck']
         relevant_trips = df_viajes[df_viajes['strCamion'] == truck]
         if not relevant_trips.empty:
@@ -157,14 +157,16 @@ def calculate_operator_analysis(filtered_df, df_viajes_completo):
   
 
     # 1. Primero, agrupamos los productos por cada orden de servicio
-    products_by_order = filtered_df.groupby(['operador', 'truck', 'work_order'])['product'].apply(
+    products_by_order = filtered_df.groupby(['operador', 'truck', 'work_order', 'invoice_date'])['product'].apply(
         lambda x: list(x.dropna().unique())
     ).reset_index()
 
     # 2. Ahora, creamos la estructura anidada que necesitamos
     # Convertimos cada fila en un diccionario {'work_order': ..., 'products': ...}
     order_details = products_by_order.apply(
-        lambda row: {'work_order': row['work_order'], 'products': row['product']},
+        lambda row: {'work_order': row['work_order'], 
+                     'products': row['product'], 
+                     'invoice_date': row['invoice_date'].strftime('%Y-%m-%d')},
         axis=1
     )
 
@@ -253,7 +255,7 @@ def display_operator_analysis_grid(operator_analysis):
                     // Devolvemos el bloque HTML completo para esta orden
                     return `
                         <div class="work-order-item">
-                            <strong>Servicio (work_order): ${order.work_order} , Fecha: ${order.created_at} </strong>
+                            <strong>Servicio (work_order): ${order.work_order} , Fecha: ${order.invoice_date} </strong>
                             <ul>
                                 ${productList}
                             </ul>
@@ -370,7 +372,7 @@ def display_trailer_analysis_table(trailer_services):
 def display_weekday_chart(filtered_df):
     """Muestra un gráfico de barras de servicios por día de la semana."""
     st.subheader('Distribución de Servicios por Día de la Semana')
-    weekday_counts = filtered_df['created_at'].dt.day_name().value_counts()
+    weekday_counts = filtered_df['invoice_date'].dt.day_name().value_counts()
     weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     weekday_counts = weekday_counts.reindex(weekday_order)
     
